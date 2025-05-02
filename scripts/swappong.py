@@ -300,7 +300,6 @@ def run_swappong():
 
     print()
     print_border(f"COMPLETED: {successful_swaps}/{total_swaps} SWAPS SUCCESSFUL", Fore.GREEN)
-    print(f"{Fore.CYAN}Developed by Ostad kachal | GitHub: https://github.com/sinak1023}{Style.RESET_ALL}")
 
 if __name__ == "__main__":
     run_swappong()
