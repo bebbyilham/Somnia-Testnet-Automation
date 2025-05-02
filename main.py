@@ -156,4 +156,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print(f"{Fore.CYAN}Developed by Ostad kachal | GitHub: https://github.com/sinak1023}{Style.RESET_ALL}")
