@@ -104,3 +104,13 @@ Contributions are welcome! Please:
 
 ## Acknowledgments
 Developed by Ostad kachal. For support or inquiries, visit [GitHub](https://github.com/sinak1023).
+
+
+# Support the Project
+
+If you find this project helpful, consider supporting it by buying me a coffee! Your contributions help keep the project alive and growing.
+
+**Wallet Address (Base):**  
+`0x7A43342707de2FA07b0C4cCe132dFD49fdA2a711`
+
+Thank you for your support! ☕
