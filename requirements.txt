@@ -6,3 +6,4 @@ eth-account
 aiohttp
 loguru
 aiohttp_socks   
+bs4
