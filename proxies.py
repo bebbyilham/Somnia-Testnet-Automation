@@ -1,46 +1,61 @@
 import requests
+import concurrent.futures
 
-# Daftar URL sumber proxy (HTTP/HTTPS)
+# Sumber proxy publik (format IP:PORT)
 PROXY_SOURCES = [
     "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=https&timeout=10000&country=all",
     "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
     "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
 ]
 
-def download_https_proxies(min_count=1000):
-    all_proxies = []
+def ambil_proxies():
+    proxies = []
     for url in PROXY_SOURCES:
-        print(f"🔽 Mengambil proxy dari: {url}")
+        print(f"🔽 Mengambil dari: {url}")
         try:
-            response = requests.get(url, timeout=10)
-            lines = response.text.strip().splitlines()
-            proxies = [line.strip() for line in lines if ":" in line]
-            print(f"✅ {len(proxies)} proxy ditemukan.")
-            all_proxies.extend(proxies)
+            res = requests.get(url, timeout=10)
+            lines = res.text.strip().splitlines()
+            proxies += [line.strip() for line in lines if ":" in line]
+            print(f"✅ {len(lines)} proxy ditemukan")
         except Exception as e:
-            print(f"⚠️ Gagal dari {url}: {e}")
+            print(f"⚠️ Gagal mengambil: {e}")
+    return list(set(proxies))
 
-    unique_proxies = list(set(all_proxies))
+def cek_proxy(proxy):
+    proxies = {
+        "http": f"http://{proxy}",
+        "https": f"http://{proxy}",  # pakai HTTP meskipun koneksi HTTPS
+    }
+    try:
+        res = requests.get("https://httpbin.org/ip", proxies=proxies, timeout=5)
+        if res.status_code == 200:
+            return proxy
+    except:
+        return None
 
-    if not unique_proxies:
-        print("❌ Tidak ada proxy yang berhasil diambil.")
-        return
+def filter_proxy(proxies, max_ok=1000):
+    print(f"🔎 Mengecek {len(proxies)} proxy...")
+    valid = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        futures = {executor.submit(cek_proxy, proxy): proxy for proxy in proxies}
+        for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
+            result = future.result()
+            if result:
+                print(f"✅ VALID: {result}")
+                valid.append(result)
+            else:
+                print(f"❌ Invalid ({i}/{len(proxies)})")
+            if len(valid) >= max_ok:
+                break
+    return valid
 
-    # Gandakan jika kurang dari 1000
-    while len(unique_proxies) < min_count:
-        unique_proxies.extend(unique_proxies)
-
-    final_proxies = unique_proxies[:min_count]
-
-    # Tambahkan prefix "https://"
-    final_formatted = [f"https://{proxy}" for proxy in final_proxies]
-
-    # Simpan ke file
-    with open("proxies.txt", "w") as f:
-        for proxy in final_formatted:
-            f.write(proxy + "\n")
-
-    print(f"📁 Berhasil menyimpan {len(final_formatted)} proxy ke 'proxies.txt' dengan format https://host:port.")
+def simpan_proxy(valid_proxies, filename="valid_proxies.txt"):
+    with open(filename, "w") as f:
+        for proxy in valid_proxies:
+            f.write(f"https://{proxy}\n")
+    print(f"📁 Disimpan: {len(valid_proxies)} proxy valid di '{filename}'.")
 
 if __name__ == "__main__":
-    download_https_proxies(1000)
+    all_proxies = ambil_proxies()
+    valid = filter_proxy(all_proxies, max_ok=1000)
+    simpan_proxy(valid)
