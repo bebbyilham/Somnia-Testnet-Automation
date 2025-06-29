@@ -7,3 +7,4 @@ aiohttp
 loguru
 aiohttp_socks   
 bs4
+cloudscraper
